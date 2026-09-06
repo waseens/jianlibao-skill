@@ -1,0 +1,7 @@
+interface:
+  display_name: "Project Career Kit"
+  short_description: "面向后端岗位的证据驱动项目经历、简历与面试材料整理"
+  brand_color: "#2563EB"
+  default_prompt: "使用 $project-career-kit 只读扫描目标后端项目，按证据生成中文 Markdown 简历、面试逐字稿、流程图和证据索引。"
+policy:
+  allow_implicit_invocation: true
