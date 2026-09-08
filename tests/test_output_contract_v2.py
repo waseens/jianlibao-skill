@@ -55,6 +55,10 @@ class OutputContractV2Tests(unittest.TestCase):
         self.assertEqual(len(mermaid_blocks), 1)
         mermaid = re.search(r"(?s)~~~mermaid\n(.*?)\n~~~", template_body)
         self.assertIsNotNone(mermaid)
+        self.assertEqual(
+            template_body[:mermaid.start()],
+            "# 项目流程图：<项目/模块名>\n\n## 核心流程\n",
+        )
         lines = mermaid.group(1).splitlines()
         self.assertTrue(lines[0].startswith("flowchart"))
         meaningful = re.compile(
