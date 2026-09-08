@@ -96,13 +96,13 @@
 
 一条组合记录或多条记录都可以联合完成上述覆盖；清点的目的是验证段落语义闭合，而不是恢复按字段、句子或谓词拆行。缺少覆盖时，补充相关 ID、建立仍满足聚合条件的记录，或收窄正文。
 
-附上引用后必须再执行反向闭包复核。为每个验收单位建立一次不落盘的临时覆盖矩阵，按以下顺序检查：
+附上引用后必须再执行反向闭包复核。文本验收单位使用末尾一个 HTML 引用；Mermaid 节点和有业务意义的边使用紧邻前一行的一个 `%% evidence:` 注释。为每个验收单位建立一次不落盘的临时覆盖矩阵，按以下顺序检查：
 
-1. 去掉隐藏引用，列出该单位中的具体实体/技术/字面值。
+1. 对文本单位去掉末尾隐藏引用，对 Mermaid 单位核对紧邻前置注释，列出该单位中的具体实体/技术/字面值。
 2. 列出实体之间的动作、实例绑定、数据流、调用跳、顺序/条件/因果和范围限定。
 3. 给每一项填入直接陈述它的证据 ID；同一组合记录可填入多项。
 4. 任一项没有 ID 时，补引已有记录、补建仍满足聚合条件的记录，或删除/收窄该项。
-5. 只把矩阵所需 ID 的去重并集写成单位末尾的一个隐藏引用；矩阵不写入四份产物。
+5. 文本单位只把矩阵所需 ID 的去重并集写成单位末尾的一个隐藏引用；Mermaid 节点或边只把该 ID 集合写成紧邻前一行的一个 `%% evidence:` 注释；矩阵不写入四份产物。
 
 最后暂时忽略源码、来源定位、标题、前后段落和流程图中的其他图例，只查看当前单位及其所引记录的“证据陈述”，再用边界/备注收窄已登记事实。如果不能由证据陈述还原矩阵中的每个项目事实、字面值和未知对象，该单位就未闭合。一个段落引用过某事实，不会让后续段落、待确认项、风险说明或问答自动获得该证据。
 
@@ -210,23 +210,23 @@ README 只有在与源码或配置完成必要交叉验证后，才能确定项�
 ~~~mermaid
 flowchart TD
     %% evidence:C003
-    createOrderRoute["代码定义创建订单接口<br/>POST /orders"]
-    %% evidence:C004
-    validateOrderPayload["校验 sku 与 quantity"]
-    %% evidence:C003,C005
-    callOrderService["调用订单服务"]
-    %% evidence:C005
-    returnCreatedStatus["返回 created 状态"]
+    defineOrderRoute["代码定义订单接口<br/>POST /orders"]
     %% evidence:C003,C004
-    createOrderRoute --> validateOrderPayload
-    %% evidence:C003,C004,C005
-    validateOrderPayload --> callOrderService
+    receiveCreateOrderPayload["处理函数接收 CreateOrder<br/>字段约束已声明"]
+    %% evidence:C003
+    callBoundOrderService["调用绑定的订单服务"]
     %% evidence:C005
-    callOrderService --> returnCreatedStatus
+    returnCreatedStatus["方法返回 created 状态"]
+    %% evidence:C003
+    defineOrderRoute --> receiveCreateOrderPayload
+    %% evidence:C003,C004
+    receiveCreateOrderPayload --> callBoundOrderService
+    %% evidence:C003,C005
+    callBoundOrderService --> returnCreatedStatus
 ~~~
 
 ## 边界说明（仅在需要时）
-在本次已读 handler、service 与 publisher 源码范围内，真实运行时响应为【未知】。 <!-- evidence:C011 -->
+在本次已读 handler、service 与 publisher 源码范围内，真实运行时响应为【未知】。 <!-- evidence:C012 -->
 ~~~~
 
 使用 fenced mermaid 代码块。核心 `flowchart` 必须在图中直接表达最小已验证链路。每个实质节点声明及有业务意义的边，紧邻前一行必须有 `%% evidence:C001,C002` 形式的注释；可选的 sequenceDiagram 或架构图也使用同样规则。节点和边只能画有来源的调用、数据或明确未知边界。禁止凭方法名、注释或目录名绘制数据库、队列、网络、下游系统或性能路径。具体状态码、响应字段、错误文本或条件标签必须在对应证据陈述中直接出现。复杂图条件不满足时，只保留非项目事实 HTML 注释，不要为了说明为何不绘图而枚举未经证据记录覆盖的多服务、事务、鉴权等范围否定。节点标签使用简洁中文；内部 ID 使用描述性名称而不显示为用户标签。只有已验证 Mermaid 语法能安全承载且证据直接支持时，才把函数名、参数、状态码和错误文本放入图中。可见文字只允许按需提供一条简短边界说明，且只说明有证据支持的运行时未知项或 Mermaid 兼容性限制；不得写节点/边的长篇图例。
@@ -338,19 +338,19 @@ inventory 的 max_bytes 表示累计读取预算，不表示触发 warning 的�
 ~~~mermaid
 flowchart TD
     %% evidence:C003
-    createOrderRoute["代码定义创建订单接口<br/>POST /orders"]
-    %% evidence:C004
-    validateOrderPayload["校验 sku 与 quantity"]
-    %% evidence:C003,C005
-    callOrderService["调用订单服务"]
-    %% evidence:C005
-    returnCreatedStatus["返回 created 状态"]
+    defineOrderRoute["代码定义订单接口<br/>POST /orders"]
     %% evidence:C003,C004
-    createOrderRoute --> validateOrderPayload
-    %% evidence:C003,C004,C005
-    validateOrderPayload --> callOrderService
+    receiveCreateOrderPayload["处理函数接收 CreateOrder<br/>字段约束已声明"]
+    %% evidence:C003
+    callBoundOrderService["调用绑定的订单服务"]
     %% evidence:C005
-    callOrderService --> returnCreatedStatus
+    returnCreatedStatus["方法返回 created 状态"]
+    %% evidence:C003
+    defineOrderRoute --> receiveCreateOrderPayload
+    %% evidence:C003,C004
+    receiveCreateOrderPayload --> callBoundOrderService
+    %% evidence:C003,C005
+    callBoundOrderService --> returnCreatedStatus
 ~~~
 
 ## 边界说明（仅在需要时）
