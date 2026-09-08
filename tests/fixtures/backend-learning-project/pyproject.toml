@@ -1,0 +1,6 @@
+[project]
+name = "multi-agent-practice"
+version = "0.1.0"
+description = "用于多智能体协作技术实践的后端服务"
+requires-python = ">=3.11"
+dependencies = ["fastapi>=0.110"]
