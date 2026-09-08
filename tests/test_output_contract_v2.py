@@ -13,12 +13,32 @@ EXPECTED_OUTPUTS = [
     "career-kit/项目流程图.md",
     "career-kit/证据索引.md",
 ]
+LEGACY_OUTPUTS = {
+    "career-kit/resume.md",
+    "career-kit/interview-script.md",
+    "career-kit/flowchart.md",
+    "career-kit/evidence.md",
+}
 
 
 def section(text: str, start: str, end: str) -> str:
     start_index = text.index(start)
     end_index = text.index(end, start_index + len(start))
     return text[start_index:end_index]
+
+
+def output_paths_outside_compatibility(text: str) -> set[str]:
+    paths = set()
+    for paragraph in re.split(r"\n\s*\n", text):
+        is_compatibility_note = (
+            "不得重命名、删除或编辑" in paragraph
+            or "保留旧产物" in paragraph
+            or bool(re.search(r"(?:保留|兼容).*(?:旧|早期|已有)", paragraph))
+        )
+        for path in re.findall(r"`(career-kit/[^`]+\.md)`", paragraph):
+            if path not in LEGACY_OUTPUTS or not is_compatibility_note:
+                paths.add(path)
+    return paths
 
 
 class OutputContractV2Tests(unittest.TestCase):
@@ -30,9 +50,7 @@ class OutputContractV2Tests(unittest.TestCase):
         output_block = section(self.contract, "## 生成文件", "## 证据工作流")
         listed = re.findall(r"(?m)^- `([^`]+\.md)`$", output_block)
         self.assertEqual(listed, EXPECTED_OUTPUTS)
-        for output_path in EXPECTED_OUTPUTS:
-            self.assertIn("`" + output_path + "`", self.skill)
-        self.assertNotRegex(self.skill, r"创建 `career-kit/(resume|interview-script|flowchart|evidence)\.md`")
+        self.assertEqual(output_paths_outside_compatibility(self.skill), set(EXPECTED_OUTPUTS))
         self.assertIn("不得重命名、删除或编辑", self.skill)
 
     def test_flow_template_places_evidence_comments_immediately_before_content(self):
@@ -46,7 +64,7 @@ class OutputContractV2Tests(unittest.TestCase):
         lines = mermaid.group(1).splitlines()
         self.assertTrue(lines[0].startswith("flowchart"))
         meaningful = re.compile(
-            r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*\s*\[|[A-Za-z_][A-Za-z0-9_]*\s*--.*>)"
+            r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*\s*(?:\[|\(|\{)|[A-Za-z_][A-Za-z0-9_]*\s*(?:--.*>|==>|-.->))"
         )
         comments = re.compile(r"^\s*%% evidence:C\d{3,}(?:,C\d{3,})*\s*$")
         checked = 0
@@ -57,7 +75,11 @@ class OutputContractV2Tests(unittest.TestCase):
                 self.assertRegex(lines[index - 1], comments)
         self.assertGreaterEqual(checked, 4)
         self.assertNotRegex(mermaid.group(1), r"(?m)^\s*[A-D]\s*\[")
-        self.assertNotIn("## 图例与边界", flow_template)
+        visible_legend_entries = re.findall(
+            r"(?m)^-\s+`?[^：:\n`]{1,40}`?\s*[：:]",
+            flow_template,
+        )
+        self.assertLess(len(visible_legend_entries), 4)
 
     def test_project_framing_requires_cross_validation_and_blocks_unconfirmed_ownership(self):
         instructions = self.skill + "\n" + self.contract
