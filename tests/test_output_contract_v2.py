@@ -27,20 +27,6 @@ def section(text: str, start: str, end: str) -> str:
     return text[start_index:end_index]
 
 
-def output_paths_outside_compatibility(text: str) -> set[str]:
-    paths = set()
-    for paragraph in re.split(r"\n\s*\n", text):
-        is_compatibility_note = (
-            "不得重命名、删除或编辑" in paragraph
-            or "保留旧产物" in paragraph
-            or bool(re.search(r"(?:保留|兼容).*(?:旧|早期|已有)", paragraph))
-        )
-        for path in re.findall(r"`(career-kit/[^`]+\.md)`", paragraph):
-            if path not in LEGACY_OUTPUTS or not is_compatibility_note:
-                paths.add(path)
-    return paths
-
-
 class OutputContractV2Tests(unittest.TestCase):
     def setUp(self):
         self.skill = SKILL_PATH.read_text(encoding="utf-8")
@@ -50,7 +36,10 @@ class OutputContractV2Tests(unittest.TestCase):
         output_block = section(self.contract, "## 生成文件", "## 证据工作流")
         listed = re.findall(r"(?m)^- `([^`]+\.md)`$", output_block)
         self.assertEqual(listed, EXPECTED_OUTPUTS)
-        self.assertEqual(output_paths_outside_compatibility(self.skill), set(EXPECTED_OUTPUTS))
+        for legacy_path in LEGACY_OUTPUTS:
+            self.assertNotIn(legacy_path, self.skill)
+        skill_output_paths = set(re.findall(r"career-kit/[^\s`\"'<>]+\.md", self.skill))
+        self.assertEqual(skill_output_paths, set(EXPECTED_OUTPUTS))
         self.assertIn("不得重命名、删除或编辑", self.skill)
 
     def test_flow_template_places_evidence_comments_immediately_before_content(self):
@@ -59,7 +48,12 @@ class OutputContractV2Tests(unittest.TestCase):
             "## career-kit/项目流程图.md",
             "## career-kit/证据索引.md",
         )
-        mermaid = re.search(r"(?s)~~~mermaid\n(.*?)\n~~~", flow_template)
+        markdown_template = re.search(r"(?s)~~~~markdown\n(.*?)\n~~~~", flow_template)
+        self.assertIsNotNone(markdown_template)
+        template_body = markdown_template.group(1)
+        mermaid_blocks = re.findall(r"(?s)~~~mermaid\n(.*?)\n~~~", template_body)
+        self.assertEqual(len(mermaid_blocks), 1)
+        mermaid = re.search(r"(?s)~~~mermaid\n(.*?)\n~~~", template_body)
         self.assertIsNotNone(mermaid)
         lines = mermaid.group(1).splitlines()
         self.assertTrue(lines[0].startswith("flowchart"))
@@ -75,11 +69,13 @@ class OutputContractV2Tests(unittest.TestCase):
                 self.assertRegex(lines[index - 1], comments)
         self.assertGreaterEqual(checked, 4)
         self.assertNotRegex(mermaid.group(1), r"(?m)^\s*[A-D]\s*\[")
-        visible_legend_entries = re.findall(
-            r"(?m)^-\s+`?[^：:\n`]{1,40}`?\s*[：:]",
-            flow_template,
+        self.assertNotIn("图例", template_body)
+        self.assertNotRegex(template_body, r"(?m)^\s*(?:[-*+]\s+|\d+[.)]\s+|\|)")
+        after_mermaid = template_body[mermaid.end():].strip()
+        self.assertRegex(
+            after_mermaid,
+            r"\A(?:|## 边界说明（仅在需要时）\n[^\n]+\s+<!-- evidence:C\d{3,}(?:,C\d{3,})* -->)\Z",
         )
-        self.assertLess(len(visible_legend_entries), 4)
 
     def test_project_framing_requires_cross_validation_and_blocks_unconfirmed_ownership(self):
         instructions = self.skill + "\n" + self.contract
