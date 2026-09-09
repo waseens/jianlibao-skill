@@ -217,7 +217,7 @@ flowchart TD
     callBoundOrderService["调用绑定的订单服务"]
     %% evidence:C005
     returnCreatedStatus["方法返回 created 状态"]
-    %% evidence:C003
+    %% evidence:C003,C004
     defineOrderRoute --> receiveCreateOrderPayload
     %% evidence:C003,C004
     receiveCreateOrderPayload --> callBoundOrderService
@@ -345,7 +345,7 @@ flowchart TD
     callBoundOrderService["调用绑定的订单服务"]
     %% evidence:C005
     returnCreatedStatus["方法返回 created 状态"]
-    %% evidence:C003
+    %% evidence:C003,C004
     defineOrderRoute --> receiveCreateOrderPayload
     %% evidence:C003,C004
     receiveCreateOrderPayload --> callBoundOrderService

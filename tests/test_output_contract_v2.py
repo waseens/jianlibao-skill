@@ -81,6 +81,27 @@ class OutputContractV2Tests(unittest.TestCase):
             r"\A(?:|## 边界说明（仅在需要时）\n[^\n]+\s+<!-- evidence:C\d{3,}(?:,C\d{3,})* -->)\Z",
         )
 
+    def test_route_to_payload_edges_cite_field_constraint_evidence(self):
+        examples = {
+            "full template": section(
+                self.contract,
+                "## career-kit/项目流程图.md",
+                "## career-kit/证据索引.md",
+            ),
+            "compact example": self.contract[
+                self.contract.index("## Compact Example (fixture)") :
+            ],
+        }
+        edge = "defineOrderRoute --> receiveCreateOrderPayload"
+        for name, example in examples.items():
+            with self.subTest(example=name):
+                lines = example.splitlines()
+                edge_index = lines.index(next(line for line in lines if edge in line))
+                self.assertEqual(
+                    lines[edge_index - 1].strip(),
+                    "%% evidence:C003,C004",
+                )
+
     def test_project_framing_requires_cross_validation_and_blocks_unconfirmed_ownership(self):
         instructions = self.skill + "\n" + self.contract
         self.assertRegex(instructions, r"README.*(?:源码|配置).*交叉验证")
