@@ -42,6 +42,73 @@ class OutputContractV2Tests(unittest.TestCase):
         self.assertEqual(skill_output_paths, set(EXPECTED_OUTPUTS))
         self.assertIn("不得重命名、删除或编辑", self.skill)
 
+    def test_user_visible_templates_keep_evidence_mappings_in_the_index(self):
+        artifact_sections = {
+            "简历素材.md": section(
+                self.contract,
+                "## career-kit/简历素材.md",
+                "## career-kit/面试逐字稿.md",
+            ),
+            "面试逐字稿.md": section(
+                self.contract,
+                "## career-kit/面试逐字稿.md",
+                "## career-kit/项目流程图.md",
+            ),
+            "项目流程图.md": section(
+                self.contract,
+                "## career-kit/项目流程图.md",
+                "## career-kit/证据索引.md",
+            ),
+        }
+        marker = r"(?is)<!--(?:(?!-->).)*\bevidence\s*:[^>]*-->"
+        for artifact, template in artifact_sections.items():
+            with self.subTest(artifact=artifact):
+                markdown_template = re.search(r"(?s)~~~~markdown\n(.*?)\n~~~~", template)
+                self.assertIsNotNone(markdown_template)
+                self.assertNotRegex(markdown_template.group(1), marker)
+
+        compact_example = self.contract[self.contract.index("## Compact Example (fixture)") :]
+        self.assertNotRegex(compact_example, marker)
+
+        evidence_template = section(
+            self.contract,
+            "## career-kit/证据索引.md",
+            "## Backend Evidence Checklist",
+        )
+        self.assertRegex(evidence_template, r"(?m)^## 下游材料映射$")
+        self.assertRegex(
+            evidence_template,
+            r"(?m)^\|\s*产物\s*\|\s*验收单位\s*\|\s*证据 ID\s*\|$",
+        )
+
+    def test_compact_example_maps_each_factual_text_unit_once(self):
+        compact_example = self.contract[self.contract.index("## Compact Example (fixture)") :]
+        mapping_table = section(
+            compact_example,
+            "## 下游材料映射",
+            "# 项目经历：订单路由接口",
+        )
+        rows = re.findall(
+            r"(?m)^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*"
+            r"(C\d{3,}(?:\s*,\s*C\d{3,})*)\s*\|$",
+            mapping_table,
+        )
+        normalized = {
+            (artifact.strip(), unit.strip()): evidence.replace(" ", "")
+            for artifact, unit, evidence in rows
+        }
+        expected = {
+            ("简历素材.md", "三条版 / 第 1 项"): "C007,C009",
+            ("简历素材.md", "三条版 / 第 2 项"): "C002,C003,C004,C005",
+            ("简历素材.md", "三条版 / 第 3 项"): "C010",
+            ("面试逐字稿.md", "核心链路说明"): "C002,C003,C004,C005",
+            ("面试逐字稿.md", "技术取舍说明"): "C005,C006,C011",
+            ("面试逐字稿.md", "故障处理与排查"): "C012",
+            ("项目流程图.md", "边界说明"): "C012",
+        }
+        self.assertEqual(len(rows), len(normalized), "duplicate compact mapping row")
+        self.assertEqual(normalized, expected)
+
     def test_flow_template_places_evidence_comments_immediately_before_content(self):
         flow_template = section(
             self.contract,
@@ -78,7 +145,7 @@ class OutputContractV2Tests(unittest.TestCase):
         after_mermaid = template_body[mermaid.end():].strip()
         self.assertRegex(
             after_mermaid,
-            r"\A(?:|## 边界说明（仅在需要时）\n[^\n]+\s+<!-- evidence:C\d{3,}(?:,C\d{3,})* -->)\Z",
+            r"\A(?:|## 边界说明（仅在需要时）\n[^\n]+)\Z",
         )
 
     def test_route_to_payload_edges_cite_field_constraint_evidence(self):
