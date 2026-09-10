@@ -1,5 +1,7 @@
 # 后端项目求职素材 Skill 设计规格
 
+> **历史规格，已废弃：** 本文包含已替换的证据审计输出要求，不能作为当前实现或验收依据。请以 [`2026-09-07-project-career-kit-v2-design.md`](2026-09-07-project-career-kit-v2-design.md) 和 [`project-career-kit/references/output-contract.md`](../../../project-career-kit/references/output-contract.md) 为准。
+
 ## 目标
 
 创建一个名为 `project-career-kit` 的单一 Agent Skill，供支持 `SKILL.md` 的 Codex、Claude Code/Claude Cloud 等客户端使用。用户将一个后端项目交给客户端扫描后，得到可直接编辑的中文 Markdown 简历素材、面试逐字稿、项目流程图和证据审计表。Skill 只读分析源码，不修改业务代码。

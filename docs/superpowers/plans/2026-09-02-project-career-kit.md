@@ -1,5 +1,7 @@
 # Project Career Kit Implementation Plan
 
+> **历史文档，已废弃：** 本文是基于旧版证据审计模型的实施计划，不能作为当前实现或验收依据。请以 [`2026-09-07-project-career-kit-v2-design.md`](../specs/2026-09-07-project-career-kit-v2-design.md) 和 [`project-career-kit/references/output-contract.md`](../../../project-career-kit/references/output-contract.md) 为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build one portable backend-project career skill that turns a scanned codebase into evidence-backed Chinese Markdown resume material, interview scripts, and Mermaid flowcharts.

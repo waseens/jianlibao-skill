@@ -1,5 +1,7 @@
 # Project Career Kit V2 Forward Evaluation
 
+> **历史文档，已废弃：** 本文记录的是旧版审计模型的前向评测，不能作为当前实现或验收依据。请以 [`2026-09-07-project-career-kit-v2-design.md`](../specs/2026-09-07-project-career-kit-v2-design.md) 和 [`project-career-kit/references/output-contract.md`](../../../project-career-kit/references/output-contract.md) 为准。
+
 - Date: 2026-09-08
 - Fixture: `tests/fixtures/backend-learning-project`
 - Isolated forward copy: `C:\Users\Administrator\AppData\Local\Temp\backend-learning-project-v2-d7124c13a03f4cc280a243cafc6bebac`

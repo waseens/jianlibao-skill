@@ -1,5 +1,7 @@
 # `project-career-kit` V2 实施计划
 
+> **历史文档，已废弃：** 本文保留旧版审计模型的实施记录，不能作为当前实现或验收依据。请以 [`2026-09-07-project-career-kit-v2-design.md`](../specs/2026-09-07-project-career-kit-v2-design.md) 和 [`project-career-kit/references/output-contract.md`](../../../project-career-kit/references/output-contract.md) 为准。
+
 > **供智能代理执行：** 必须逐项使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans`。每个步骤使用复选框追踪。
 
 **目标：** 将 `project-career-kit` 升级为 V2 契约：只生成四个中文文件，用图内 Mermaid 证据注释表达项目流程，并以项目开发视角书写经验证的学习/实验项目定位。
